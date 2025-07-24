@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engine6.0 Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at center, #2c2c3d, #1f1f2e);
+      overflow: hidden;
+      position: relative;
+      color: white;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at center, rgba(123, 97, 255, 0.08), transparent 70%);
+      animation: pulse 4s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    h1 {
+      text-align: center;
+      position: relative;
+      margin-top: 50px;
+      z-index: 2;
+      font-size: 2.5rem;
+      color: #a78bfa;
+    }
+
+    /* Floating Info Panels */
+    .info-panels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      padding: 60px 40px;
+      z-index: 2;
+      position: relative;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      backdrop-filter: blur(15px);
+      padding: 20px;
+      box-shadow: 0 0 15px rgba(167, 139, 250, 0.1);
+      transition: transform 0.3s;
+    }
+
+    .panel:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 20px rgba(167, 139, 250, 0.2);
+    }
+
+    .panel h2 {
+      font-size: 1.2rem;
+      color: #c9b8ff;
+      margin-bottom: 10px;
+    }
+
+    .panel p {
+      font-size: 0.95rem;
+      color: #ddd;
+      line-height: 1.5;
+    }
+
+    /* Footer */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(34, 34, 51, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px 20px;
+      gap: 15px;
+      z-index: 3;
+      border-top: 1px solid rgba(123, 97, 255, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    footer img {
+      width: 28px;
+      height: 28px;
+      filter: drop-shadow(0 0 6px #7b61ff);
+      animation: pulseLogo 3s infinite;
+    }
+
+    @keyframes pulseLogo {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.85; }
+    }
+
+    footer span {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #bbaeff;
+    }
+
+    footer a {
+      background: linear-gradient(135deg, #7b61ff, #a78bfa);
+      padding: 8px 16px;
+      border-radius: 10px;
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    footer a:hover {
+      background: linear-gradient(135deg, #a78bfa, #7b61ff);
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="backgroundCanvas"></canvas>
+
+<h1>Welcome to Pulse Engine6.0</h1>
+
+<div class="info-panels">
+  <div class="panel">
+    <h2>Dev</h2>
+    <p>to open the ai look in the bottm right and click the logo</p>
+  </div>
+  <div class="panel">
+    <h2>Built for Speed</h2>
+    <p>Get instant responses backed by the latest conversational intelligence—fast, reliable, and smart.</p>
+  </div>
+  <div class="panel">
+    <h2>Context Aware</h2>
+    <p>Understands your goals, preferences, and remembers key context while chatting for personalized help.</p>
+  </div>
+  <div class="panel">
+    <h2>Voice Ready</h2>
+    <p>Talk naturally—Engine6.0 supports both text and voice modes powered by Voiceflow integration.</p>
+  </div>
+</div>
+
+<footer>
+  <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Discord">
+  <span>Join Discord Today</span>
+  <a href="https://discord.gg/NsuKV4JX69" target="_blank">Join Now</a>
+</footer>
+
+<!-- Floating Lines + Dots Background Script -->
+<script>
+  const canvas = document.getElementById('backgroundCanvas');
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  const DOT_COUNT = 90;
+  const MAX_DIST = 130;
+  const dots = [];
+
+  class Dot {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+      this.vx = (Math.random() - 0.5) * 0.4;
+      this.vy = (Math.random() - 0.5) * 0.4;
+      this.radius = 1.5 + Math.random() * 1.5;
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.x < 0 || this.x > width) this.vx *= -1;
+      if (this.y < 0 || this.y > height) this.vy *= -1;
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(167,139,250,0.6)';
+      ctx.shadowColor = 'rgba(167,139,250,0.7)';
+      ctx.shadowBlur = 6;
+      ctx.fill();
+    }
+  }
+
+  function connectDots() {
+    for (let i = 0; i < DOT_COUNT; i++) {
+      for (let j = i + 1; j < DOT_COUNT; j++) {
+        let dx = dots[i].x - dots[j].x;
+        let dy = dots[i].y - dots[j].y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MAX_DIST) {
+          ctx.beginPath();
+          ctx.moveTo(dots[i].x, dots[i].y);
+          ctx.lineTo(dots[j].x, dots[j].y);
+          ctx.strokeStyle = `rgba(167,139,250,${(1 - dist / MAX_DIST) * 0.4})`;
+          ctx.lineWidth = 1;
+          ctx.shadowColor = 'rgba(167,139,250,0.3)';
+          ctx.shadowBlur = 8;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+  }
+
+  function init() {
+    dots.length = 0;
+    for (let i = 0; i < DOT_COUNT; i++) {
+      dots.push(new Dot());
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    dots.forEach(dot => {
+      dot.update();
+      dot.draw();
+    });
+    connectDots();
+    requestAnimationFrame(animate);
+  }
+
+  window.addEventListener('resize', () => {
+    resize();
+    init();
+  });
+
+  resize();
+  init();
+  animate();
+</script>
+
+<!-- Voiceflow AI Widget -->
+<script type="text/javascript">
+  (function(d, t) {
+    var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+    v.onload = function() {
+      window.voiceflow.chat.load({
+        verify: { projectID: '6881ad4575d34e837b91fcf9' },
+        url: 'https://general-runtime.voiceflow.com',
+        versionID: 'production',
+        voice: { url: "https://runtime-api.voiceflow.com" }
+      });
+    };
+    v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs";
+    v.type = "text/javascript";
+    s.parentNode.insertBefore(v, s);
+  })(document, 'script');
+</script>
+
+</body>
+</html>
